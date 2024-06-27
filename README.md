@@ -12,7 +12,3 @@ Remember to add following at your **.env.local**
 > - MYSQL_USER
 > - MYSQL_PASSWORD
 > - MYSQL_DATABASE
-
-> - USER_TABLE_NAME
-> - USER_ID_FIELD_NAME
-> - USER_PASSWORD_FIELD_NAME

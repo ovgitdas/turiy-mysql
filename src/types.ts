@@ -2,6 +2,10 @@ export type Tuple = {
   [key: string]: string | number;
 };
 
+export type Table = {
+  [key: string]: Tuple;
+};
+
 export type InsertProps = {
   tableName: string;
   data: Tuple;
@@ -18,14 +22,8 @@ export type DeleteProps = {
   where: string;
 };
 
-export type User = {
-  id: number;
-  businessId: number;
-  password: string;
-  active: number;
-};
-
-export type UserCred = {
-  userd: string;
-  password: string;
+export type Session = {
+  user: Tuple;
+  ip: string;
+  agent: string;
 };
