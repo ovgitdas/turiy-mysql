@@ -1,6 +1,6 @@
 {
   "name": "turiy-mysql",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "This package is built on mysql2.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -19,9 +19,7 @@
   "author": "turiy",
   "license": "ISC",
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.2.3",
     "@types/node": "^20.14.9",
-    "rollup-plugin-obfuscator": "^1.1.0",
     "tsup": "^8.1.0",
     "typescript": "^5.5.2"
   },
