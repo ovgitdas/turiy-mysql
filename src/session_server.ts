@@ -1,3 +1,4 @@
+"use server";
 import { cookies, headers } from "next/headers";
 import { BrowserClientAuth, Session } from "./types";
 import { getDecrypted, getEncrypted } from "./encrypt_server";

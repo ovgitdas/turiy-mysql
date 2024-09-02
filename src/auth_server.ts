@@ -1,3 +1,4 @@
+"use server";
 import { select } from "./mysql_server";
 import { cookies } from "next/headers";
 import {
@@ -28,7 +29,7 @@ export const authCheck = async (): Promise<Tuple | undefined> => {
   const session = await getSession();
   const agent = getUserAgent();
   const ip = getClientIP();
-  return session && session.user && session.agent === agent && session.ip === ip
+  return session && session.user //&& session.agent === agent && session.ip === ip
     ? session.user
     : undefined;
 };
