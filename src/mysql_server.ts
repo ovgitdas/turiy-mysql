@@ -24,14 +24,14 @@ const WHERE = (tuple: Tuple): string => {
     } else if (col.toLowerCase() === "or") {
       or = ` OR (${tuple[col]})`;
     } else if (col.toLowerCase() === "orderby") {
-      or = ` ORDER BY ${tuple[col]}`;
+      orderby = ` ORDER BY ${tuple[col]}`;
     } else {
       colNames.push(`${col}`);
       colValues.push(`'${tuple[col]}'`);
     }
   }
   return colNames.length === 1 && colNames[0].toLowerCase() === "where"
-    ? `WHERE ${tuple[colNames[0]]}${orderby}`
+    ? `WHERE ${tuple[colNames[0]]}${and}${or}${orderby}`
     : `WHERE (${colNames.join(",")}) IN ((${colValues.join(
         ","
       )}))${and}${or}${orderby}`;
