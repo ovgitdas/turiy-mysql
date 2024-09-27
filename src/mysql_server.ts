@@ -20,7 +20,7 @@ const WHERE = (tuple: Tuple): string => {
     colValues.push(`'${tuple[col]}'`);
   }
   return colNames.length === 1 && colNames[0].toLowerCase() === "where"
-    ? `WHERE ${colValues[0]}`
+    ? `WHERE ${tuple[colNames[0]]}`
     : `WHERE (${colNames.join(",")}) IN ((${colValues.join(",")}))`;
 };
 
