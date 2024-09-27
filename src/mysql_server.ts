@@ -15,13 +15,26 @@ const SET = (table: Table): string => {
 const WHERE = (tuple: Tuple): string => {
   const colNames = [];
   const colValues = [];
-  for (let col in tuple) {
-    colNames.push(`${col}`);
-    colValues.push(`'${tuple[col]}'`);
+  let and = "";
+  let or = "";
+  let orderby = "";
+  for (const col in tuple) {
+    if (col.toLowerCase() === "and") {
+      and = ` AND (${tuple[col]})`;
+    } else if (col.toLowerCase() === "or") {
+      or = ` OR (${tuple[col]})`;
+    } else if (col.toLowerCase() === "orderby") {
+      or = ` ORDER BY ${tuple[col]}`;
+    } else {
+      colNames.push(`${col}`);
+      colValues.push(`'${tuple[col]}'`);
+    }
   }
   return colNames.length === 1 && colNames[0].toLowerCase() === "where"
-    ? `WHERE ${tuple[colNames[0]]}`
-    : `WHERE (${colNames.join(",")}) IN ((${colValues.join(",")}))`;
+    ? `WHERE ${tuple[colNames[0]]}${orderby}`
+    : `WHERE (${colNames.join(",")}) IN ((${colValues.join(
+        ","
+      )}))${and}${or}${orderby}`;
 };
 
 const WHERE_TAB = (table: Table): string => {
