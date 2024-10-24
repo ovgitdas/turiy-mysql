@@ -2,12 +2,21 @@
 import mysql from "mysql2/promise";
 import { Tuple, Table } from "./types";
 
+const VALUE = (text: any): string => {
+  try {
+    if (text.includes("'")) {
+      return text.split("'").join("''");
+    }
+  } catch (ex) {}
+  return text;
+};
+
 const SET = (table: Table): string => {
   const tableName = Object.keys(table)[0];
   const row = table[tableName];
   const columns = [];
   for (let col in row) {
-    columns.push(`${col}='${row[col]}'`);
+    columns.push(`${col}='${VALUE(row[col])}'`);
   }
   return `${tableName} SET ${columns.join(",")}`;
 };
