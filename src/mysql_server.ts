@@ -64,7 +64,12 @@ export const execute = async (query: string): Promise<Tuple[]> => {
     });
     try {
       const res = await con.query(query);
-      results = query.toLowerCase().startsWith("select")
+      results = query
+        .split("(")
+        .join("")
+        .trim()
+        .toLowerCase()
+        .startsWith("select")
         ? (res[0] as any[])
         : [res];
     } catch (ex) {
