@@ -1,6 +1,6 @@
 {
   "name": "turiy-mysql",
-  "version": "1.1.2",
+  "version": "2.0.0",
   "description": "This package is built on mysql2.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -16,7 +16,7 @@
     "Auth",
     "Query"
   ],
-  "author": "abhijit@putonics",
+  "author": "abhijitdas",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20.14.9",
@@ -29,6 +29,6 @@
     "mysql2": "^3.10.1"
   },
   "peerDependencies": {
-    "next": "^14.2.4"
+    "next": "^15.3.1"
   }
 }

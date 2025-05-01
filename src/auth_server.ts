@@ -16,19 +16,19 @@ export const signin = async (userTable: Table): Promise<Tuple | undefined> => {
   if (res.length > 0 && res[0].active) {
     setSession({
       user: res[0],
-      agent: getUserAgent(),
-      ip: getClientIP(),
+      agent: await getUserAgent(),
+      ip: await getClientIP(),
     });
     return res[0];
   }
 };
 
-export const signout = () => cookies().delete("session");
+export const signout = async () => (await cookies()).delete("session");
 
 export const authCheck = async (): Promise<Tuple | undefined> => {
   const session = await getSession();
-  const agent = getUserAgent();
-  const ip = getClientIP();
+  const agent = await getUserAgent();
+  const ip = await getClientIP();
   return session && session.user //&& session.agent === agent && session.ip === ip
     ? session.user
     : undefined;

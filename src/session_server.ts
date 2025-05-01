@@ -3,8 +3,8 @@ import { cookies, headers } from "next/headers";
 import { BrowserClientAuth, Session } from "./types";
 import { getDecrypted, getEncrypted } from "./encrypt_server";
 
-export const setSession = (session: Session) => {
-  cookies().set("session", getEncrypted(session), {
+export const setSession = async (session: Session) => {
+  (await cookies()).set("session", getEncrypted(session), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 60 * 24, // One day
@@ -14,7 +14,7 @@ export const setSession = (session: Session) => {
 
 export const getSession = async (): Promise<Session | undefined> => {
   try {
-    return getDecrypted(cookies().get("session")?.value ?? "");
+    return getDecrypted((await cookies()).get("session")?.value ?? "");
   } catch (ex) {
     return undefined;
   }
@@ -30,28 +30,28 @@ export const getSessionFor = async (
   }
 };
 
-export const getClientIP = () => {
+export const getClientIP = async () => {
   const FALLBACK_IP_ADDRESS = "0.0.0.0";
-  const forwardedFor = headers().get("x-forwarded-for");
+  const forwardedFor = (await headers()).get("x-forwarded-for");
 
   if (forwardedFor) {
     return forwardedFor.split(",")[0] ?? FALLBACK_IP_ADDRESS;
   }
 
-  return headers().get("x-real-ip") ?? FALLBACK_IP_ADDRESS;
+  return (await headers()).get("x-real-ip") ?? FALLBACK_IP_ADDRESS;
 };
 
-export const getUserAgent = () => {
-  return headers().get("user-agent") ?? "";
+export const getUserAgent = async () => {
+  return (await headers()).get("user-agent") ?? "";
 };
 
 export const getBrowserClientAuth = async (): Promise<
   BrowserClientAuth | undefined
 > => {
   try {
-    const sessionCipher = cookies().get("session")?.value ?? "";
-    const agent = getUserAgent();
-    const ip = getClientIP();
+    const sessionCipher = (await cookies()).get("session")?.value ?? "";
+    const agent = await getUserAgent();
+    const ip = await getClientIP();
     return { sessionCipher, agent, ip };
   } catch (ex) {}
 };
