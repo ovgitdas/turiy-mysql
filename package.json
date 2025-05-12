@@ -1,6 +1,6 @@
 {
   "name": "turiy-mysql",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "This package is built on mysql2.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

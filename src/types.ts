@@ -17,3 +17,10 @@ export type BrowserClientAuth = {
   ip: string;
   agent: string;
 };
+
+export type MySQLConnection = {
+  host: string;
+  user: string;
+  password: string;
+  database: string;
+};

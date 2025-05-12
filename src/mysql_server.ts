@@ -1,6 +1,6 @@
 "use server";
 import mysql from "mysql2/promise";
-import { Tuple, Table } from "./types";
+import { Tuple, Table, MySQLConnection } from "./types";
 
 const VALUE = (text: any): string => {
   try {
@@ -53,15 +53,20 @@ const WHERE_TAB = (table: Table): string => {
 };
 
 //? Execute any SQL statement
-export const execute = async (query: string): Promise<Tuple[]> => {
+export const execute = async (
+  query: string,
+  connectionInfo?: MySQLConnection
+): Promise<Tuple[]> => {
   let results = [];
   try {
-    const con = await mysql.createConnection({
-      host: process.env.MYSQL_HOST,
-      user: process.env.MYSQL_USER,
-      password: process.env.MYSQL_PASSWORD,
-      database: process.env.MYSQL_DATABASE,
-    });
+    const con = await mysql.createConnection(
+      connectionInfo || {
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+      }
+    );
     try {
       const res = await con.query(query);
       results = query
@@ -86,23 +91,34 @@ export const execute = async (query: string): Promise<Tuple[]> => {
 };
 
 //? e.g: insert({item:{itemId: "IT78945", price:300, discount:15}})
-export const insert = async (table: Table): Promise<boolean> =>
-  (await execute(`INSERT INTO ${SET(table)}`)).length > 0;
+export const insert = async (
+  table: Table,
+  connectionInfo?: MySQLConnection
+): Promise<boolean> =>
+  (await execute(`INSERT INTO ${SET(table)}`, connectionInfo)).length > 0;
 
 //? e.g: update({item:{price:200, discount:5}}, {where: "(itemId) IN (('IT78945'))"})
 //? e.g: update({item:{price:200, discount:5}}, {itemId: "IT78945"})
 export const update = async (
   table: Table,
-  condition: Tuple
+  condition: Tuple,
+  connectionInfo?: MySQLConnection
 ): Promise<boolean> =>
-  (await execute(`UPDATE ${SET(table)} ${WHERE(condition)}`)).length > 0;
+  (await execute(`UPDATE ${SET(table)} ${WHERE(condition)}`, connectionInfo))
+    .length > 0;
 
 //? e.g: del({item: {where: "(itemId) IN (('IT78945'))"}})
 //? e.g: del({item: {itemId: "IT78945"}})
-export const del = async (table: Table): Promise<boolean> =>
-  (await execute(`DELETE FROM ${WHERE_TAB(table)}`)).length > 0;
+export const del = async (
+  table: Table,
+  connectionInfo?: MySQLConnection
+): Promise<boolean> =>
+  (await execute(`DELETE FROM ${WHERE_TAB(table)}`, connectionInfo)).length > 0;
 
 //? e.g: select({user: {where: "(userId, password) IN (('123456789', 'P#@$%745458'))"}})
 //? e.g: select({user: {userId: 123456789, password: "P#@$%745458"}})
-export const select = async (table: Table): Promise<Tuple[]> =>
-  await execute(`SELECT * FROM ${WHERE_TAB(table)}`);
+export const select = async (
+  table: Table,
+  connectionInfo?: MySQLConnection
+): Promise<Tuple[]> =>
+  await execute(`SELECT * FROM ${WHERE_TAB(table)}`, connectionInfo);
