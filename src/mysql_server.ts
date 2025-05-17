@@ -36,7 +36,7 @@ const WHERE = (tuple: Tuple): string => {
       orderby = ` ORDER BY ${tuple[col]}`;
     } else {
       colNames.push(`${col}`);
-      colValues.push(`'${tuple[col]}'`);
+      colValues.push(`'${VALUE(tuple[col])}'`);
     }
   }
   return colNames.length === 1 && colNames[0].toLowerCase() === "where"
