@@ -82,7 +82,7 @@ export const execute = async (
       console.error(ex);
     }
     await con.end();
-    console.log("Close the database connection.");
+    // console.log("Close the database connection.");
   } catch (ex) {
     console.log("MySQL Connection error!");
     console.error(ex);
