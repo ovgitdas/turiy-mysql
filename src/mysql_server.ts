@@ -78,8 +78,10 @@ export const execute = async (
         ? (res[0] as any[])
         : [res];
     } catch (ex) {
-      console.log("MySQL Query error!");
-      console.error(ex);
+      if (!process.env.NO_ERROR) {
+        console.log("MySQL Query error!");
+        console.error(ex);
+      }
     }
     await con.end();
     // console.log("Close the database connection.");
