@@ -1,6 +1,6 @@
 # Turiy MySQL Package
 
-This package is made on `mysql2` and `next`. The functions exported here is treated as server side functions. This package is able to create connection with your _MySQL_ database and handle user authentication.
+This package is made on `mysql2` and `next`. The functions exported here is treated as server side functions. This package is able to create connection with your _MySQL_ database using cached-connection-pool and handle user authentication and CRUD operations.
 
 > **Recommended** to use inside `server components` or `use server` files.
 
@@ -13,6 +13,7 @@ Remember to add following at your `.env.local`
 - MYSQL_USER
 - MYSQL_PASSWORD
 - MYSQL_DATABASE
+- MYSQL_POOL_CONNECTION_LIMIT (10 by default)
 
 ## Queries with `where` clause
 
@@ -21,9 +22,9 @@ Select queries
 ```typescript
 select({
   user: { where: "(userId, password) IN (('123456789', 'P#@$%745458'))" },
-});
+})
 // or
-select({ user: { where: "rating>2000" } });
+select({ user: { where: "rating>2000" } })
 ```
 
 Update queries
@@ -32,17 +33,17 @@ Update queries
 update(
   { item: { price: 200, discount: 5 } },
   { where: "(itemId) IN (('IT78945'))" }
-);
+)
 // or
-update({ item: { price: 200, discount: 5 } }, { where: "price=300" });
+update({ item: { price: 200, discount: 5 } }, { where: "price=300" })
 ```
 
 Delete queries
 
 ```typescript
-del({ item: { where: "(itemId) IN (('IT78945'))" } });
+del({ item: { where: "(itemId) IN (('IT78945'))" } })
 // or
-del({ item: { where: "price<10" } });
+del({ item: { where: "price<10" } })
 ```
 
 ## Queries without `where` clause
@@ -52,19 +53,19 @@ del({ item: { where: "price<10" } });
 Select queries
 
 ```typescript
-select({ user: { userId: 123456789, password: "P#@$%745458" } });
+select({ user: { userId: 123456789, password: "P#@$%745458" } })
 ```
 
 Update queries
 
 ```typescript
-update({ item: { price: 200, discount: 5 } }, { itemId: "IT78945" });
+update({ item: { price: 200, discount: 5 } }, { itemId: "IT78945" })
 ```
 
 Delete queries
 
 ```typescript
-del({ item: { itemId: "IT78945" } });
+del({ item: { itemId: "IT78945" } })
 ```
 
 ## Other queries
@@ -72,16 +73,16 @@ del({ item: { itemId: "IT78945" } });
 Insert queries
 
 ```typescript
-insert({ item: { itemId: "IT78945", price: 300, discount: 15 } });
+insert({ item: { itemId: "IT78945", price: 300, discount: 15 } })
 ```
 
 > You can directly executes any `SQL` queries including complex queries with the `execute`.
 
 ```typescript
-execute("SELECT ...");
-execute("INSERT ...");
-execute("UPDATE ...");
-execute("DELETE ...");
+execute("SELECT ...")
+execute("INSERT ...")
+execute("UPDATE ...")
+execute("DELETE ...")
 ```
 
 # Authentication
@@ -96,11 +97,11 @@ execute("DELETE ...");
 
 ```typescript
 //_Examples are given here_
-signin({ user: { id: "my-user-id", password: "my-password" } });
+signin({ user: { id: "my-user-id", password: "my-password" } })
 // or
-signin({ user: { emailId: "my-user-id", password: "my-password" } });
+signin({ user: { emailId: "my-user-id", password: "my-password" } })
 //or
-signin({ user: { emailId: "my-user-id", password: "my-password", active: 1 } });
+signin({ user: { emailId: "my-user-id", password: "my-password", active: 1 } })
 ```
 
 ## Sign-out
@@ -127,7 +128,7 @@ You only need to invoke `signout()`
 >   `getBrowserClientAuth = async (): Promise<BrowserClientAuth | undefined>`.
 
 ```typescript
-const clientAuth = await getBrowserClientAuth();
+const clientAuth = await getBrowserClientAuth()
 ```
 
 > - Then `middleware` uses `fetch` or `axios` to invoke an `auth check api`.
@@ -137,8 +138,8 @@ const clientAuth = await getBrowserClientAuth();
 const response = await fetch("<api-url>", {
   method: "POST",
   body: JSON.stringify(clientAuth),
-});
-const userInfo = await response.json();
+})
+const userInfo = await response.json()
 ```
 
 > - Then the `api`, that may be declared as follows, uses `authCheckFor` to validate the end user authentication. and response the user information to the `middleware`.
@@ -146,8 +147,8 @@ const userInfo = await response.json();
 ```typescript
 //The `api` can be written as follows:
 export async function POST(req: Request) {
-  const { sessionCipher, ip, agent } = await req.json();
-  const user = await authCheckFor({ sessionCipher, ip, agent });
-  return Response.json(user);
+  const { sessionCipher, ip, agent } = await req.json()
+  const user = await authCheckFor({ sessionCipher, ip, agent })
+  return Response.json(user)
 }
 ```
