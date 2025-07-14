@@ -87,32 +87,38 @@ export async function getPoolConnection() {
 }
 
 //? Execute any SQL statement
+const _execute = async (
+  query: string,
+  con: mysql.PoolConnection | mysql.Connection
+) => {
+  try {
+    const res = await con.query(query)
+    return query.split("(").join("").trim().toLowerCase().startsWith("select")
+      ? (res[0] as any[])
+      : [res]
+  } catch (ex) {
+    if (!process.env.NO_ERROR) {
+      console.log("MySQL Query error!")
+      console.error(ex)
+    }
+  }
+  return []
+}
 export const execute = async (
   query: string,
   connectionInfo?: MySQLConnection
 ): Promise<Tuple[]> => {
   let results = []
   try {
-    const con = !!connectionInfo
-      ? await mysql.createConnection(connectionInfo)
-      : await getPoolConnection()
-    try {
-      const res = await con.query(query)
-      results = query
-        .split("(")
-        .join("")
-        .trim()
-        .toLowerCase()
-        .startsWith("select")
-        ? (res[0] as any[])
-        : [res]
-    } catch (ex) {
-      if (!process.env.NO_ERROR) {
-        console.log("MySQL Query error!")
-        console.error(ex)
-      }
+    if (!!connectionInfo) {
+      const con = await mysql.createConnection(connectionInfo)
+      results = await _execute(query, con)
+      await con.end()
+    } else {
+      const con = await getPoolConnection()
+      results = await _execute(query, con)
+      con.release()
     }
-    await con.end()
     // console.log("Close the database connection.");
   } catch (ex) {
     console.log("MySQL Connection error!")
