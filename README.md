@@ -1,154 +1,272 @@
-# Turiy MySQL Package
+# Turiy MySQL
 
-This package is made on `mysql2` and `next`. The functions exported here is treated as server side functions. This package is able to create connection with your _MySQL_ database using cached-connection-pool and handle user authentication and CRUD operations.
+> A streamlined MySQL and authentication toolkit for Next.js Server Components.
 
-> **Recommended** to use inside `server components` or `use server` files.
+**Author:** Abhijit Das
 
-## Environment Variables
+---
 
-Remember to add following at your `.env.local`
+## Overview
 
-- CRYPTO_PASSWORD [optional]
-- MYSQL_HOST
-- MYSQL_USER
-- MYSQL_PASSWORD
-- MYSQL_DATABASE
-- MYSQL_POOL_CONNECTION_LIMIT (10 by default)
+`turiy-mysql` is a lightweight, server-side library designed specifically for **Next.js** applications that use Server Components (`"use server"`). It simplifies database interactions and session-based authentication by providing a concise, intuitive API for common tasks.
 
-## Queries with `where` clause
+### Key Features
 
-Select queries
+- **Simplified CRUD:** Perform `INSERT`, `SELECT`, `UPDATE`, and `DELETE` operations with simple JavaScript objects.
+- **Session Management:** Secure, cookie-based authentication flow (`signin`, `signout`, `authCheck`).
+- **Server-Side Focus:** Built for the modern Next.js stack, ensuring code runs securely on the server.
+- **Efficient Connections:** Utilizes a cached connection pool to manage database connections efficiently.
+- **Zero Dependencies (on the client):** Keeps your client-side bundles clean and fast.
+
+---
+
+## Core Concepts
+
+The library's API revolves around two simple data structures: `Table` and `Tuple`.
+
+Think of your database as a filing cabinet.
+
+- `Table`: This represents a single drawer in the cabinet, identified by the table's name. It's an object with one key: the table name.
+- `Tuple`: This represents a single file or a set of query conditions within that drawer. It's a simple key-value object.
+
+**Analogy in Code:**
 
 ```typescript
-select({
-  user: { where: "(userId, password) IN (('123456789', 'P#@$%745458'))" },
-})
-// or
-select({ user: { where: "rating>2000" } })
+// A 'Tuple' is like a single file's data or a query filter.
+const userData: Tuple = { name: "Abhijit", role: "Developer" };
+
+// A 'Table' object points to the 'user' table (the drawer)
+// and contains the data (the file).
+const userTable: Table = {
+  user: userData,
+};
 ```
 
-Update queries
+---
 
-```typescript
-update(
-  { item: { price: 200, discount: 5 } },
-  { where: "(itemId) IN (('IT78945'))" }
-)
-// or
-update({ item: { price: 200, discount: 5 } }, { where: "price=300" })
+## Getting Started
+
+### 1. Installation
+
+```bash
+npm install turiy-mysql
 ```
 
-Delete queries
+### 2. Environment Variables
 
-```typescript
-del({ item: { where: "(itemId) IN (('IT78945'))" } })
-// or
-del({ item: { where: "price<10" } })
+Create a `.env.local` file in the root of your project and add the following variables. These are essential for connecting to your MySQL database and securing sessions.
+
+```env
+# --- Database Connection ---
+MYSQL_HOST=your_database_host
+MYSQL_USER=your_database_user
+MYSQL_PASSWORD=your_database_password
+MYSQL_DATABASE=your_database_name
+
+# Optional: Max connections in the pool (defaults to 10)
+MYSQL_POOL_CONNECTION_LIMIT=10
+
+# --- Session Encryption ---
+# IMPORTANT: A long, random, and secret string for encrypting session cookies.
+# You can generate one using `openssl rand -base64 32`
+CRYPTO_PASSWORD=your_secret_encryption_key
 ```
 
-## Queries without `where` clause
+---
 
-> These queries only checks the equality of the given fields.
+## Database (CRUD) Operations
 
-Select queries
+All database functions are `async` and should be awaited.
 
-```typescript
-select({ user: { userId: 123456789, password: "P#@$%745458" } })
-```
+### `insert()`
 
-Update queries
+Adds a new row to a table.
 
 ```typescript
-update({ item: { price: 200, discount: 5 } }, { itemId: "IT78945" })
-```
+import { insert } from "turiy-mysql";
 
-Delete queries
+const newUser = await insert({
+  users: { name: "Jane Doe", email: "jane.doe@example.com", active: 1 },
+});
 
-```typescript
-del({ item: { itemId: "IT78945" } })
-```
-
-## Other queries
-
-Insert queries
-
-```typescript
-insert({ item: { itemId: "IT78945", price: 300, discount: 15 } })
-```
-
-> You can directly executes any `SQL` queries including complex queries with the `execute`.
-
-```typescript
-execute("SELECT ...")
-execute("INSERT ...")
-execute("UPDATE ...")
-execute("DELETE ...")
-```
-
-# Authentication
-
-> Following functions are provided to handle authentication.
-
-## Sign-in
-
-`signin = async (userTable: Table): Promise<Tuple|undefined>`
-
-> This function takes the user `table-name` and `field` information to check whether the given information exists inside database or not. If exists it returns the `tuple` containing complete user information as defined by your user table of your database; otherwise returns `undefined`.
-
-```typescript
-//_Examples are given here_
-signin({ user: { id: "my-user-id", password: "my-password" } })
-// or
-signin({ user: { emailId: "my-user-id", password: "my-password" } })
-//or
-signin({ user: { emailId: "my-user-id", password: "my-password", active: 1 } })
-```
-
-## Sign-out
-
-You only need to invoke `signout()`
-
-## Auth check `client` to `server`
-
-`authCheck = async (): Promise<Tuple|undefined>`
-
-> After successfully signed-in this function is invoked for every request to see whether the user is signed-in or not. If the user is authentic and signed-in user, then it returns the `tuple` containing complete user information as defined by your user table of your database; otherwise returns `undefined`.
->
-> _This function works only when the request is made directly from the user's browser._
-
-## Auth check `client` to `middleware (server)` to `api (server)`
-
-`authCheckFor = async ({sessionCipher, ip, agent}: BrowserClientAuth): Promise<Tuple|undefined>`
-
-> This function works exactly same way as the above function `authCheck`. The only difference is that it allows the `middleware` to communicate with the `api` existing in the same server to validate the user authentication.
->
-> _Since `middleware` doesn't have access to full functionality of server, it sometimes use `api` call to get information from the server._
-
-> - At first `middleware` invokes the `browserClientAuth` function.
->   `getBrowserClientAuth = async (): Promise<BrowserClientAuth | undefined>`.
-
-```typescript
-const clientAuth = await getBrowserClientAuth()
-```
-
-> - Then `middleware` uses `fetch` or `axios` to invoke an `auth check api`.
-
-```typescript
-//Inside `middleware` this `api` is invoked
-const response = await fetch("<api-url>", {
-  method: "POST",
-  body: JSON.stringify(clientAuth),
-})
-const userInfo = await response.json()
-```
-
-> - Then the `api`, that may be declared as follows, uses `authCheckFor` to validate the end user authentication. and response the user information to the `middleware`.
-
-```typescript
-//The `api` can be written as follows:
-export async function POST(req: Request) {
-  const { sessionCipher, ip, agent } = await req.json()
-  const user = await authCheckFor({ sessionCipher, ip, agent })
-  return Response.json(user)
+if (newUser) {
+  console.log("User created successfully!");
 }
 ```
+
+### `select()`
+
+Retrieves rows from a table. You can query by simple equality or by providing a custom `where` string.
+
+**Example 1: Simple Equality Check**
+
+This finds a user where `userId` is '123' AND `status` is 'active'.
+
+```typescript
+import { select } from "turiy-mysql";
+
+const users = await select({
+  users: { userId: "123", status: "active" },
+});
+```
+
+**Example 2: Custom `where` Clause**
+
+This gives you full SQL power for complex queries.
+
+```typescript
+import { select } from "turiy-mysql";
+
+const premiumUsers = await select({
+  users: { where: "subscription = 'premium' AND last_login > '2023-01-01'" },
+});
+```
+
+### `update()`
+
+Updates one or more rows matching a condition.
+
+```typescript
+import { update } from "turiy-mysql";
+
+const wasUpdated = await update(
+  { users: { status: "inactive" } }, // The new data to set
+  { userId: "456" } // The condition (WHERE userId = '456')
+);
+```
+
+### `del()`
+
+Deletes rows matching a condition.
+
+```typescript
+import { del } from "turiy-mysql";
+
+const wasDeleted = await del({
+  logs: { where: "timestamp < '2022-01-01'" },
+});
+```
+
+### `execute()`
+
+For ultimate flexibility, you can run any raw SQL query.
+
+```typescript
+import { execute } from "turiy-mysql";
+
+const results = await execute(
+  "SELECT COUNT(*) as total FROM posts WHERE author_id = 123;"
+);
+```
+
+---
+
+## Authentication
+
+The authentication system works by issuing a secure, encrypted, `HttpOnly` cookie to the user upon a successful sign-in. This cookie acts like a keycard. On subsequent requests, the server validates this keycard to confirm the user's identity.
+
+### `signin()`
+
+Verifies user credentials against the database. If successful, it creates a session and sends the encrypted session cookie to the browser.
+
+```typescript
+import { signin } from "turiy-mysql";
+
+export async function handleLogin(formData) {
+  "use server";
+  const email = formData.get("email");
+  const password = formData.get("password");
+
+  const user = await signin({
+    users: { email, password, active: 1 },
+  });
+
+  if (user) {
+    // Redirect to dashboard
+  } else {
+    // Show error message
+  }
+}
+```
+
+### `signout()`
+
+Deletes the session cookie, effectively logging the user out.
+
+```typescript
+import { signout } from "turiy-mysql";
+
+export async function handleLogout() {
+  "use server";
+  await signout();
+  // Redirect to login page
+}
+```
+
+### `authCheck()`
+
+Checks the incoming request for a valid session cookie. Use this in your layouts, pages, or API routes to protect content and actions.
+
+```typescript
+import { authCheck } from "turiy-mysql";
+import { redirect } from "next/navigation";
+
+export default async function ProtectedPage() {
+  const user = await authCheck();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  return <div>Welcome, {user.name}!</div>;
+}
+```
+
+### `authCheckFor()`
+
+This is a specialized version of `authCheck` for server-to-server communication, most commonly between **Next.js Middleware** and an **API Route**.
+
+Since middleware has a different runtime context and cannot directly read the decrypted cookie, it needs to pass the raw cookie value and headers to an API route, which then uses `authCheckFor` to perform the validation.
+
+**Flow:**
+
+1.  **In `middleware.ts`**, get the client auth details.
+
+    ```typescript
+    import { getBrowserClientAuth } from "turiy-mysql";
+
+    const clientAuth = await getBrowserClientAuth();
+    ```
+
+2.  The middleware then calls an internal API route, passing these details.
+    ```typescript
+    const response = await fetch("https://your-app.com/api/auth-check", {
+      method: "POST",
+      body: JSON.stringify(clientAuth),
+    });
+    const data = await response.json(); // Contains user info or null
+    ```
+3.  **In `/api/auth-check/route.ts`**, use `authCheckFor` to validate the details.
+
+    ```typescript
+    import { authCheckFor } from "turiy-mysql";
+
+    export async function POST(req: Request) {
+      const { sessionCipher, ip, agent } = await req.json();
+      const user = await authCheckFor({ sessionCipher, ip, agent });
+      return Response.json(user); // Responds with user data or null
+    }
+    ```
+
+---
+
+## Security Considerations
+
+- **Encryption Key:** The `CRYPTO_PASSWORD` environment variable is critical for session security. **Never** commit it to version control. It should be a long, random, unique string for each environment.
+- **SQL Injection:** When using the `where` property in `select()`, `update()`, or `del()`, you are writing a raw SQL fragment. **You are responsible for sanitizing this input** to prevent SQL injection attacks. The library's automatic value escaping only applies to simple key-value equality checks, not to custom `where` strings.
+
+---
+
+## License
+
+This project is licensed under the MIT License.
